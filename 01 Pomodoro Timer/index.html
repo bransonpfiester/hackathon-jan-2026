@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pomodoro Timer</title>
+  <title>Mountain Focus</title>
   <style>
     * {
       margin: 0;
@@ -11,272 +11,241 @@
       box-sizing: border-box;
     }
 
-    :root {
-      --focus-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      --break-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-      --btn-color: #667eea;
-    }
-
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Courier New', monospace;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--focus-gradient);
-      transition: background 0.5s ease;
-    }
-
-    body.break {
-      background: var(--break-gradient);
-    }
-
-    .container {
-      text-align: center;
-      padding: 3rem 4rem;
-      border-radius: 40px;
-      position: relative;
-      /* Liquid glass effect: brightness + blur + SVG displacement */
-      backdrop-filter: brightness(1.1) blur(2px) url(#liquid-glass);
-      -webkit-backdrop-filter: brightness(1.1) blur(2px) url(#liquid-glass);
-      background: rgba(255, 255, 255, 0.08);
-      box-shadow:
-        0 25px 50px -12px rgba(0, 0, 0, 0.25),
-        inset 0 1px 1px rgba(255, 255, 255, 0.5),
-        inset 0 -1px 1px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Specular highlight rim - simulates light reflection on glass edge */
-    .container::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 2px;
-      background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.8) 0%,
-        rgba(255, 255, 255, 0.3) 25%,
-        rgba(255, 255, 255, 0.05) 50%,
-        rgba(255, 255, 255, 0.1) 75%,
-        rgba(255, 255, 255, 0.2) 100%
+      background: linear-gradient(to bottom, 
+        #0a0a0a 0%, 
+        #1a1a1a 40%, 
+        #2d2520 70%, 
+        #3d3025 100%
       );
-      -webkit-mask: 
-        linear-gradient(#fff 0 0) content-box, 
-        linear-gradient(#fff 0 0);
-      mask: 
-        linear-gradient(#fff 0 0) content-box, 
-        linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
+      overflow: hidden;
+      position: relative;
     }
 
-    /* Inner highlight glow */
-    .container::after {
-      content: '';
-      position: absolute;
+    /* Stars */
+    .stars {
+      position: fixed;
       top: 0;
       left: 0;
-      right: 0;
-      height: 50%;
-      border-radius: 40px 40px 0 0;
-      background: linear-gradient(
-        to bottom,
-        rgba(255, 255, 255, 0.15) 0%,
-        rgba(255, 255, 255, 0) 100%
-      );
+      width: 100%;
+      height: 60%;
       pointer-events: none;
+      z-index: 0;
+    }
+
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 3s ease-in-out infinite;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    /* Mountains */
+    .mountains {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .mountain {
+      position: absolute;
+      bottom: 0;
+      width: 0;
+      height: 0;
+      border-style: solid;
+    }
+
+    .mountain-1 {
+      left: -10%;
+      border-width: 0 50vw 45vh 50vw;
+      border-color: transparent transparent #1a1815 transparent;
+    }
+
+    .mountain-2 {
+      left: 20%;
+      border-width: 0 40vw 55vh 40vw;
+      border-color: transparent transparent #252220 transparent;
+    }
+
+    .mountain-3 {
+      right: -5%;
+      border-width: 0 45vw 50vh 45vw;
+      border-color: transparent transparent #1f1d1a transparent;
+    }
+
+    .mountain-4 {
+      left: 40%;
+      border-width: 0 35vw 40vh 35vw;
+      border-color: transparent transparent #2a2725 transparent;
+    }
+
+    /* Ambient glow */
+    .glow {
+      position: fixed;
+      bottom: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 300px;
+      height: 150px;
+      background: radial-gradient(ellipse, rgba(255, 100, 50, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Container */
+    .container {
+      text-align: center;
+      padding: 2.5rem 3.5rem;
+      position: relative;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
     }
 
     .settings-btn {
       position: absolute;
-      top: 1rem;
-      right: 1rem;
+      top: 0.75rem;
+      right: 0.75rem;
       background: none;
-      border: none;
-      font-size: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 0.8rem;
       cursor: pointer;
-      opacity: 0.6;
-      transition: opacity 0.2s;
-      padding: 0.5rem;
-      filter: brightness(0) invert(1);
+      padding: 0.4rem 0.6rem;
+      color: rgba(255, 255, 255, 0.5);
+      transition: all 0.2s;
+      border-radius: 2px;
     }
 
     .settings-btn:hover {
-      opacity: 1;
-    }
-
-    .theme-panel {
-      display: none;
-      position: absolute;
-      top: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      margin-top: 1rem;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(40px) saturate(180%);
-      -webkit-backdrop-filter: blur(40px) saturate(180%);
-      border-radius: 24px;
-      padding: 1.5rem;
-      box-shadow: 
-        0 25px 50px -12px rgba(0, 0, 0, 0.25),
-        inset 0 1px 1px rgba(255, 255, 255, 0.3);
-      z-index: 100;
-      min-width: 280px;
-    }
-
-    .theme-panel::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 1.5px;
-      background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.5) 0%,
-        rgba(255, 255, 255, 0.1) 50%,
-        rgba(255, 255, 255, 0.2) 100%
-      );
-      -webkit-mask: 
-        linear-gradient(#fff 0 0) content-box, 
-        linear-gradient(#fff 0 0);
-      mask: 
-        linear-gradient(#fff 0 0) content-box, 
-        linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
-    }
-
-    .theme-panel.open {
-      display: block;
-    }
-
-    .theme-panel h3 {
-      font-size: 0.9rem;
       color: rgba(255, 255, 255, 0.9);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 1rem;
-    }
-
-    .theme-options {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.75rem;
-    }
-
-    .theme-option {
-      width: 60px;
-      height: 60px;
-      border-radius: 12px;
-      border: 3px solid transparent;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .theme-option:hover {
-      transform: scale(1.1);
-    }
-
-    .theme-option.active {
-      border-color: rgba(255, 255, 255, 0.9);
-    }
-
-    .theme-option span {
-      display: block;
-      font-size: 0.65rem;
-      color: rgba(255, 255, 255, 0.8);
-      margin-top: 0.25rem;
-      text-align: center;
+      border-color: rgba(255, 255, 255, 0.4);
     }
 
     h1 {
-      color: rgba(255, 255, 255, 0.95);
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.9rem;
+      font-weight: normal;
+      letter-spacing: 4px;
+      text-transform: uppercase;
       margin-bottom: 0.5rem;
-      font-size: 1.8rem;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
     .mode {
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 1rem;
-      margin-bottom: 2rem;
+      color: rgba(255, 150, 100, 0.9);
+      font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 2px;
+      letter-spacing: 3px;
+      margin-bottom: 2rem;
     }
 
     .timer-wrapper {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 1rem;
+      gap: 1.5rem;
       margin-bottom: 2rem;
     }
 
     .timer {
-      font-size: 6rem;
-      font-weight: 200;
+      font-size: 5rem;
+      font-weight: normal;
       color: rgba(255, 255, 255, 0.95);
       font-variant-numeric: tabular-nums;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      letter-spacing: 4px;
     }
 
     .time-adjust {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      border: none;
-      background: rgba(255, 255, 255, 0.12);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      font-size: 1.5rem;
-      color: rgba(255, 255, 255, 0.9);
+      width: 36px;
+      height: 36px;
+      border-radius: 2px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: transparent;
+      font-size: 1.2rem;
+      color: rgba(255, 255, 255, 0.6);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all 0.2s;
-      padding: 0;
-      line-height: 1;
-      position: relative;
-      box-shadow:
-        inset 0 1px 1px rgba(255, 255, 255, 0.3),
-        0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .time-adjust::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 1px;
-      background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.4) 0%,
-        rgba(255, 255, 255, 0.1) 50%,
-        rgba(255, 255, 255, 0.15) 100%
-      );
-      -webkit-mask: 
-        linear-gradient(#fff 0 0) content-box, 
-        linear-gradient(#fff 0 0);
-      mask: 
-        linear-gradient(#fff 0 0) content-box, 
-        linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
     }
 
     .time-adjust:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.2);
-      transform: scale(1.1);
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.9);
+      border-color: rgba(255, 255, 255, 0.4);
     }
 
     .time-adjust:disabled {
-      opacity: 0.3;
+      opacity: 0.2;
       cursor: not-allowed;
+    }
+
+    .task-input-wrapper {
+      margin-bottom: 2rem;
+    }
+
+    .task-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+      font-family: 'Courier New', monospace;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      outline: none;
+      transition: all 0.2s;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.3);
+      color: rgba(255, 255, 255, 0.9);
+      letter-spacing: 1px;
+    }
+
+    .task-input:focus {
+      border-color: rgba(255, 150, 100, 0.5);
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .task-input::placeholder {
+      color: rgba(255, 255, 255, 0.3);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+    }
+
+    .current-task {
+      display: none;
+      margin-bottom: 2rem;
+      padding: 0.75rem 1rem;
+      background: rgba(255, 150, 100, 0.1);
+      border: 1px solid rgba(255, 150, 100, 0.2);
+      border-radius: 2px;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+    }
+
+    .current-task.visible {
+      display: block;
+    }
+
+    .current-task strong {
+      color: rgba(255, 150, 100, 0.9);
     }
 
     .buttons {
@@ -286,87 +255,51 @@
     }
 
     button {
-      padding: 1rem 2.5rem;
-      font-size: 1.1rem;
-      border: none;
-      border-radius: 50px;
+      padding: 0.75rem 2rem;
+      font-size: 0.8rem;
+      font-family: 'Courier New', monospace;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 2px;
       cursor: pointer;
-      transition: all 0.2s ease;
-      font-weight: 500;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.8);
     }
 
     .start-btn {
-      background: var(--focus-gradient);
-      color: white;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .start-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 50%;
-      background: linear-gradient(
-        to bottom,
-        rgba(255, 255, 255, 0.3) 0%,
-        rgba(255, 255, 255, 0) 100%
-      );
-      border-radius: 50px 50px 0 0;
-      pointer-events: none;
-    }
-
-    body.break .start-btn {
-      background: var(--break-gradient);
+      background: rgba(255, 150, 100, 0.2);
+      border-color: rgba(255, 150, 100, 0.4);
+      color: rgba(255, 200, 150, 0.95);
     }
 
     .start-btn:hover:not(:disabled) {
-      transform: scale(1.05);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      background: rgba(255, 150, 100, 0.3);
+      border-color: rgba(255, 150, 100, 0.6);
     }
 
-    .reset-btn {
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      color: rgba(255, 255, 255, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .reset-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 50%;
-      background: linear-gradient(
-        to bottom,
-        rgba(255, 255, 255, 0.2) 0%,
-        rgba(255, 255, 255, 0) 100%
-      );
-      border-radius: 50px 50px 0 0;
-      pointer-events: none;
+    .start-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
     }
 
     .reset-btn:hover {
-      background: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.1);
     }
 
     .skip-btn {
       background: transparent;
-      color: rgba(255, 255, 255, 0.7);
+      border: none;
+      color: rgba(255, 255, 255, 0.4);
       padding: 0.5rem 1rem;
-      font-size: 0.9rem;
-      margin-top: 1rem;
+      font-size: 0.7rem;
+      margin-top: 1.5rem;
+      letter-spacing: 1px;
     }
 
     .skip-btn:hover:not(:disabled) {
-      color: rgba(255, 255, 255, 0.95);
+      color: rgba(255, 255, 255, 0.7);
     }
 
     .skip-btn:disabled {
@@ -374,105 +307,69 @@
       cursor: not-allowed;
     }
 
-    .task-input-wrapper {
-      margin-bottom: 1.5rem;
+    /* Break mode */
+    body.break {
+      background: linear-gradient(to bottom, 
+        #0a0a12 0%, 
+        #1a1a2a 40%, 
+        #202535 70%, 
+        #252a40 100%
+      );
     }
 
-    .task-input {
-      width: 100%;
-      padding: 0.85rem 1.25rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 16px;
-      outline: none;
-      transition: all 0.2s;
-      text-align: center;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      color: rgba(255, 255, 255, 0.95);
-      box-shadow:
-        inset 0 1px 1px rgba(255, 255, 255, 0.2),
-        inset 0 -1px 1px rgba(0, 0, 0, 0.05),
-        0 4px 12px rgba(0, 0, 0, 0.1);
+    body.break .mode {
+      color: rgba(100, 180, 255, 0.9);
     }
 
-    .task-input:focus {
-      background: rgba(255, 255, 255, 0.18);
-      box-shadow:
-        inset 0 1px 1px rgba(255, 255, 255, 0.3),
-        inset 0 -1px 1px rgba(0, 0, 0, 0.05),
-        0 4px 20px rgba(0, 0, 0, 0.15);
+    body.break .start-btn {
+      background: rgba(100, 180, 255, 0.2);
+      border-color: rgba(100, 180, 255, 0.4);
+      color: rgba(150, 200, 255, 0.95);
     }
 
-    .task-input::placeholder {
-      color: rgba(255, 255, 255, 0.45);
+    body.break .start-btn:hover:not(:disabled) {
+      background: rgba(100, 180, 255, 0.3);
+      border-color: rgba(100, 180, 255, 0.6);
     }
 
-    .current-task {
-      display: none;
-      margin-bottom: 1.5rem;
-      padding: 0.85rem 1.25rem;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-radius: 16px;
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 0.95rem;
-      box-shadow:
-        inset 0 1px 1px rgba(255, 255, 255, 0.2),
-        0 4px 12px rgba(0, 0, 0, 0.1);
+    body.break .glow {
+      background: radial-gradient(ellipse, rgba(100, 150, 255, 0.1) 0%, transparent 70%);
     }
 
-    .current-task.visible {
-      display: block;
+    body.break .current-task {
+      background: rgba(100, 180, 255, 0.1);
+      border-color: rgba(100, 180, 255, 0.2);
     }
 
-    .current-task strong {
-      color: rgba(255, 255, 255, 0.95);
+    body.break .current-task strong {
+      color: rgba(100, 180, 255, 0.9);
     }
 
-    .start-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none !important;
-      box-shadow: none !important;
+    body.break .task-input:focus {
+      border-color: rgba(100, 180, 255, 0.5);
     }
   </style>
 </head>
 <body>
-  <!-- SVG Displacement Filter for Liquid Glass Effect -->
-  <svg style="position: absolute; width: 0; height: 0;" aria-hidden="true">
-    <defs>
-      <!-- Liquid Glass displacement filter -->
-      <filter id="liquid-glass" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
-        <!-- Create displacement map with red/green gradients for edge refraction -->
-        <feImage 
-          href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='hDisp' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0%25' stop-color='%23FF8080'/%3E%3Cstop offset='15%25' stop-color='%23808080'/%3E%3Cstop offset='85%25' stop-color='%23808080'/%3E%3Cstop offset='100%25' stop-color='%2380FF80'/%3E%3C/linearGradient%3E%3ClinearGradient id='vDisp' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%2380FF80'/%3E%3Cstop offset='15%25' stop-color='%23808080'/%3E%3Cstop offset='85%25' stop-color='%23808080'/%3E%3Cstop offset='100%25' stop-color='%23FF8080'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23hDisp)'/%3E%3Crect width='100' height='100' fill='url(%23vDisp)' style='mix-blend-mode:multiply'/%3E%3C/svg%3E"
-          result="dispMap"
-          preserveAspectRatio="none"
-        />
-        <!-- Apply displacement using R for X and G for Y -->
-        <feDisplacementMap 
-          in="SourceGraphic" 
-          in2="dispMap" 
-          scale="25"
-          xChannelSelector="R" 
-          yChannelSelector="G"
-        />
-      </filter>
-    </defs>
-  </svg>
+  <!-- Stars -->
+  <div class="stars" id="stars"></div>
 
+  <!-- Mountains -->
+  <div class="mountains">
+    <div class="mountain mountain-1"></div>
+    <div class="mountain mountain-2"></div>
+    <div class="mountain mountain-3"></div>
+    <div class="mountain mountain-4"></div>
+  </div>
+
+  <!-- Ambient glow -->
+  <div class="glow"></div>
+
+  <!-- Timer Container -->
   <div class="container">
-    <button class="settings-btn" id="settingsBtn" title="Change theme">⚙️</button>
-    
-    <div class="theme-panel" id="themePanel">
-      <h3>Choose Theme</h3>
-      <div class="theme-options" id="themeOptions"></div>
-    </div>
+    <button class="settings-btn" id="settingsBtn">MENU</button>
 
-    <h1>Pomodoro Timer</h1>
+    <h1>Mountain Focus</h1>
     <div class="mode" id="mode">Focus Time</div>
     
     <div class="task-input-wrapper" id="taskInputWrapper">
@@ -493,58 +390,24 @@
   </div>
 
   <script>
+    // Generate stars
+    const starsContainer = document.getElementById('stars');
+    for (let i = 0; i < 150; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      const size = Math.random() * 2 + 1;
+      star.style.width = size + 'px';
+      star.style.height = size + 'px';
+      star.style.animationDelay = Math.random() * 3 + 's';
+      star.style.animationDuration = (Math.random() * 2 + 2) + 's';
+      starsContainer.appendChild(star);
+    }
+
     let workMinutes = 25;
     let breakMinutes = 5;
 
-    const themes = [
-      {
-        name: 'Purple',
-        focus: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        break: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)'
-      },
-      {
-        name: 'Sunset',
-        focus: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-        break: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
-      },
-      {
-        name: 'Ocean',
-        focus: 'linear-gradient(135deg, #0052D4 0%, #6FB1FC 100%)',
-        break: 'linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)'
-      },
-      {
-        name: 'Fire',
-        focus: 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)',
-        break: 'linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%)'
-      },
-      {
-        name: 'Dark',
-        focus: 'linear-gradient(135deg, #232526 0%, #414345 100%)',
-        break: 'linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%)'
-      },
-      {
-        name: 'Forest',
-        focus: 'linear-gradient(135deg, #134e5e 0%, #71b280 100%)',
-        break: 'linear-gradient(135deg, #ffb347 0%, #ffcc33 100%)'
-      },
-      {
-        name: 'Rose',
-        focus: 'linear-gradient(135deg, #ee9ca7 0%, #ffdde1 100%)',
-        break: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
-      },
-      {
-        name: 'Midnight',
-        focus: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
-        break: 'linear-gradient(135deg, #00b09b 0%, #96c93d 100%)'
-      },
-      {
-        name: 'Minimal',
-        focus: 'linear-gradient(135deg, #bdc3c7 0%, #2c3e50 100%)',
-        break: 'linear-gradient(135deg, #8e9eab 0%, #eef2f3 100%)'
-      }
-    ];
-
-    let currentTheme = 0;
     let timeLeft = workMinutes * 60;
     let isRunning = false;
     let isBreak = false;
@@ -552,15 +415,12 @@
 
     const decreaseBtn = document.getElementById('decreaseBtn');
     const increaseBtn = document.getElementById('increaseBtn');
-
     const timerDisplay = document.getElementById('timer');
     const startBtn = document.getElementById('startBtn');
     const resetBtn = document.getElementById('resetBtn');
     const skipBtn = document.getElementById('skipBtn');
     const modeDisplay = document.getElementById('mode');
     const settingsBtn = document.getElementById('settingsBtn');
-    const themePanel = document.getElementById('themePanel');
-    const themeOptions = document.getElementById('themeOptions');
     const taskInput = document.getElementById('taskInput');
     const taskInputWrapper = document.getElementById('taskInputWrapper');
     const currentTaskDisplay = document.getElementById('currentTask');
@@ -568,38 +428,29 @@
     let currentTask = '';
     let hasStartedSession = false;
 
-    // Disable start button and skip button initially
     startBtn.disabled = true;
     skipBtn.disabled = true;
 
-    // Enable/disable start based on task input
     taskInput.addEventListener('input', () => {
       startBtn.disabled = taskInput.value.trim() === '';
     });
 
-    // Allow Enter key to start timer
     taskInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter' && taskInput.value.trim() !== '') {
         toggleTimer();
       }
     });
 
-    // Time adjustment buttons
     function adjustTime(delta) {
       if (isRunning) return;
-      
       const currentMinutes = Math.floor(timeLeft / 60);
       const newMinutes = Math.max(1, currentMinutes + delta);
-      
       timeLeft = newMinutes * 60;
-      
-      // Update the base duration
       if (isBreak) {
         breakMinutes = newMinutes;
       } else {
         workMinutes = newMinutes;
       }
-      
       updateDisplay();
       updateAdjustButtons();
     }
@@ -612,83 +463,28 @@
 
     decreaseBtn.addEventListener('click', () => adjustTime(-1));
     increaseBtn.addEventListener('click', () => adjustTime(1));
-
-    // Initialize button states
     updateAdjustButtons();
-
-    // Build theme options
-    themes.forEach((theme, index) => {
-      const option = document.createElement('div');
-      option.innerHTML = `
-        <div class="theme-option ${index === 0 ? 'active' : ''}" 
-             style="background: ${theme.focus}" 
-             data-index="${index}">
-        </div>
-        <span>${theme.name}</span>
-      `;
-      option.querySelector('.theme-option').addEventListener('click', () => selectTheme(index));
-      themeOptions.appendChild(option);
-    });
-
-    function selectTheme(index) {
-      currentTheme = index;
-      const theme = themes[index];
-      
-      document.documentElement.style.setProperty('--focus-gradient', theme.focus);
-      document.documentElement.style.setProperty('--break-gradient', theme.break);
-      
-      // Update active state
-      document.querySelectorAll('.theme-option').forEach((opt, i) => {
-        opt.classList.toggle('active', i === index);
-      });
-      
-      // Save preference
-      localStorage.setItem('pomodoroTheme', index);
-    }
-
-    // Load saved theme
-    const savedTheme = localStorage.getItem('pomodoroTheme');
-    if (savedTheme !== null) {
-      selectTheme(parseInt(savedTheme));
-    }
-
-    // Toggle theme panel
-    settingsBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      themePanel.classList.toggle('open');
-    });
-
-    // Close panel when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!themePanel.contains(e.target) && e.target !== settingsBtn) {
-        themePanel.classList.remove('open');
-      }
-    });
 
     function updateDisplay() {
       const minutes = Math.floor(timeLeft / 60);
       const seconds = timeLeft % 60;
       timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-      document.title = `${timerDisplay.textContent} - ${isBreak ? 'Break' : 'Focus'}`;
+      document.title = `${timerDisplay.textContent} - ${isBreak ? 'Break' : 'Focus'} | Mountain Focus`;
     }
 
     function toggleTimer() {
       if (isRunning) {
-        // Pausing
         clearInterval(interval);
         startBtn.textContent = 'Start';
       } else {
-        // Starting
         if (!isBreak) {
           currentTask = taskInput.value.trim();
           taskInputWrapper.style.display = 'none';
           currentTaskDisplay.innerHTML = `<strong>Working on:</strong> ${currentTask}`;
           currentTaskDisplay.classList.add('visible');
-          // Enable skip button once timer has started
           hasStartedSession = true;
           skipBtn.disabled = false;
         }
-        
         interval = setInterval(() => {
           timeLeft--;
           updateDisplay();
@@ -710,14 +506,11 @@
       isRunning = false;
       timeLeft = isBreak ? breakMinutes * 60 : workMinutes * 60;
       startBtn.textContent = 'Start';
-      
       if (!isBreak) {
-        // Reset during focus mode - show input again
         taskInputWrapper.style.display = 'block';
         currentTaskDisplay.classList.remove('visible');
         startBtn.disabled = taskInput.value.trim() === '';
       }
-      
       updateDisplay();
       updateAdjustButtons();
     }
@@ -731,23 +524,19 @@
       startBtn.textContent = 'Start';
       
       if (isBreak) {
-        // Switching to break - hide task, enable start and skip
         currentTaskDisplay.classList.remove('visible');
         taskInputWrapper.style.display = 'none';
         startBtn.disabled = false;
-        skipBtn.disabled = false; // Can always skip back to focus from break
+        skipBtn.disabled = false;
       } else {
-        // Switching to focus - show task input, clear previous task
         taskInput.value = '';
         currentTask = '';
         taskInputWrapper.style.display = 'block';
         currentTaskDisplay.classList.remove('visible');
         startBtn.disabled = true;
-        // Disable skip until timer starts
         hasStartedSession = false;
         skipBtn.disabled = true;
       }
-      
       updateDisplay();
       updateAdjustButtons();
     }
@@ -756,19 +545,16 @@
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
-      
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
-      
-      oscillator.frequency.value = 800;
+      oscillator.frequency.value = 600;
       oscillator.type = 'sine';
-      gainNode.gain.value = 0.3;
-      
+      gainNode.gain.value = 0.2;
       oscillator.start();
       setTimeout(() => {
         oscillator.stop();
         audioContext.close();
-      }, 200);
+      }, 300);
     }
 
     startBtn.addEventListener('click', toggleTimer);
