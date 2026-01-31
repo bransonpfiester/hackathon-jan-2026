@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomodoro Timer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --focus-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --break-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      --btn-color: #667eea;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--focus-gradient);
+      transition: background 0.5s ease;
+    }
+
+    body.break {
+      background: var(--break-gradient);
+    }
+
+    .container {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 3rem 4rem;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .settings-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+      padding: 0.5rem;
+    }
+
+    .settings-btn:hover {
+      opacity: 1;
+    }
+
+    .theme-panel {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: 1rem;
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      z-index: 100;
+      min-width: 280px;
+    }
+
+    .theme-panel.open {
+      display: block;
+    }
+
+    .theme-panel h3 {
+      font-size: 0.9rem;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1rem;
+    }
+
+    .theme-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+
+    .theme-option {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .theme-option:hover {
+      transform: scale(1.1);
+    }
+
+    .theme-option.active {
+      border-color: #333;
+    }
+
+    .theme-option span {
+      display: block;
+      font-size: 0.65rem;
+      color: #666;
+      margin-top: 0.25rem;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 0.5rem;
+      font-size: 1.8rem;
+    }
+
+    .mode {
+      color: #666;
+      font-size: 1rem;
+      margin-bottom: 2rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .timer-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .timer {
+      font-size: 6rem;
+      font-weight: 200;
+      color: #333;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .time-adjust {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid #ddd;
+      background: white;
+      font-size: 1.5rem;
+      color: #666;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .time-adjust:hover:not(:disabled) {
+      border-color: #667eea;
+      color: #667eea;
+      transform: scale(1.1);
+    }
+
+    .time-adjust:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    button {
+      padding: 1rem 2.5rem;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+
+    .start-btn {
+      background: var(--focus-gradient);
+      color: white;
+    }
+
+    body.break .start-btn {
+      background: var(--break-gradient);
+    }
+
+    .start-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .reset-btn {
+      background: #f0f0f0;
+      color: #666;
+    }
+
+    .reset-btn:hover {
+      background: #e0e0e0;
+    }
+
+    .skip-btn {
+      background: transparent;
+      color: #999;
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+      margin-top: 1rem;
+    }
+
+    .skip-btn:hover {
+      color: #666;
+    }
+
+    .task-input-wrapper {
+      margin-bottom: 1.5rem;
+    }
+
+    .task-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+      text-align: center;
+    }
+
+    .task-input:focus {
+      border-color: #667eea;
+    }
+
+    .task-input::placeholder {
+      color: #aaa;
+    }
+
+    .current-task {
+      display: none;
+      margin-bottom: 1.5rem;
+      padding: 0.75rem 1rem;
+      background: #f5f5f5;
+      border-radius: 12px;
+      color: #555;
+      font-size: 0.95rem;
+    }
+
+    .current-task.visible {
+      display: block;
+    }
+
+    .current-task strong {
+      color: #333;
+    }
+
+    .start-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button class="settings-btn" id="settingsBtn" title="Change theme">⚙️</button>
+    
+    <div class="theme-panel" id="themePanel">
+      <h3>Choose Theme</h3>
+      <div class="theme-options" id="themeOptions"></div>
+    </div>
+
+    <h1>Pomodoro Timer</h1>
+    <div class="mode" id="mode">Focus Time</div>
+    
+    <div class="task-input-wrapper" id="taskInputWrapper">
+      <input type="text" class="task-input" id="taskInput" placeholder="What will you accomplish?" maxlength="100">
+    </div>
+    <div class="current-task" id="currentTask"></div>
+    
+    <div class="timer-wrapper">
+      <button class="time-adjust" id="decreaseBtn" title="Decrease time">−</button>
+      <div class="timer" id="timer">25:00</div>
+      <button class="time-adjust" id="increaseBtn" title="Increase time">+</button>
+    </div>
+    <div class="buttons">
+      <button class="start-btn" id="startBtn">Start</button>
+      <button class="reset-btn" id="resetBtn">Reset</button>
+    </div>
+    <button class="skip-btn" id="skipBtn">Skip to Break →</button>
+  </div>
+
+  <script>
+    let workMinutes = 25;
+    let breakMinutes = 5;
+
+    const themes = [
+      {
+        name: 'Purple',
+        focus: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        break: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)'
+      },
+      {
+        name: 'Sunset',
+        focus: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+        break: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+      },
+      {
+        name: 'Ocean',
+        focus: 'linear-gradient(135deg, #0052D4 0%, #6FB1FC 100%)',
+        break: 'linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)'
+      },
+      {
+        name: 'Fire',
+        focus: 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)',
+        break: 'linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%)'
+      },
+      {
+        name: 'Dark',
+        focus: 'linear-gradient(135deg, #232526 0%, #414345 100%)',
+        break: 'linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%)'
+      },
+      {
+        name: 'Forest',
+        focus: 'linear-gradient(135deg, #134e5e 0%, #71b280 100%)',
+        break: 'linear-gradient(135deg, #ffb347 0%, #ffcc33 100%)'
+      },
+      {
+        name: 'Rose',
+        focus: 'linear-gradient(135deg, #ee9ca7 0%, #ffdde1 100%)',
+        break: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+      },
+      {
+        name: 'Midnight',
+        focus: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
+        break: 'linear-gradient(135deg, #00b09b 0%, #96c93d 100%)'
+      },
+      {
+        name: 'Minimal',
+        focus: 'linear-gradient(135deg, #bdc3c7 0%, #2c3e50 100%)',
+        break: 'linear-gradient(135deg, #8e9eab 0%, #eef2f3 100%)'
+      }
+    ];
+
+    let currentTheme = 0;
+    let timeLeft = workMinutes * 60;
+    let isRunning = false;
+    let isBreak = false;
+    let interval = null;
+
+    const decreaseBtn = document.getElementById('decreaseBtn');
+    const increaseBtn = document.getElementById('increaseBtn');
+
+    const timerDisplay = document.getElementById('timer');
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const skipBtn = document.getElementById('skipBtn');
+    const modeDisplay = document.getElementById('mode');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const themePanel = document.getElementById('themePanel');
+    const themeOptions = document.getElementById('themeOptions');
+    const taskInput = document.getElementById('taskInput');
+    const taskInputWrapper = document.getElementById('taskInputWrapper');
+    const currentTaskDisplay = document.getElementById('currentTask');
+
+    let currentTask = '';
+
+    // Disable start button initially
+    startBtn.disabled = true;
+
+    // Enable/disable start based on task input
+    taskInput.addEventListener('input', () => {
+      startBtn.disabled = taskInput.value.trim() === '';
+    });
+
+    // Allow Enter key to start timer
+    taskInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && taskInput.value.trim() !== '') {
+        toggleTimer();
+      }
+    });
+
+    // Time adjustment buttons
+    function adjustTime(delta) {
+      if (isRunning) return;
+      
+      const currentMinutes = Math.floor(timeLeft / 60);
+      const newMinutes = Math.max(1, currentMinutes + delta);
+      
+      timeLeft = newMinutes * 60;
+      
+      // Update the base duration
+      if (isBreak) {
+        breakMinutes = newMinutes;
+      } else {
+        workMinutes = newMinutes;
+      }
+      
+      updateDisplay();
+      updateAdjustButtons();
+    }
+
+    function updateAdjustButtons() {
+      const currentMinutes = Math.floor(timeLeft / 60);
+      decreaseBtn.disabled = isRunning || currentMinutes <= 1;
+      increaseBtn.disabled = isRunning;
+    }
+
+    decreaseBtn.addEventListener('click', () => adjustTime(-1));
+    increaseBtn.addEventListener('click', () => adjustTime(1));
+
+    // Initialize button states
+    updateAdjustButtons();
+
+    // Build theme options
+    themes.forEach((theme, index) => {
+      const option = document.createElement('div');
+      option.innerHTML = `
+        <div class="theme-option ${index === 0 ? 'active' : ''}" 
+             style="background: ${theme.focus}" 
+             data-index="${index}">
+        </div>
+        <span>${theme.name}</span>
+      `;
+      option.querySelector('.theme-option').addEventListener('click', () => selectTheme(index));
+      themeOptions.appendChild(option);
+    });
+
+    function selectTheme(index) {
+      currentTheme = index;
+      const theme = themes[index];
+      
+      document.documentElement.style.setProperty('--focus-gradient', theme.focus);
+      document.documentElement.style.setProperty('--break-gradient', theme.break);
+      
+      // Update active state
+      document.querySelectorAll('.theme-option').forEach((opt, i) => {
+        opt.classList.toggle('active', i === index);
+      });
+      
+      // Save preference
+      localStorage.setItem('pomodoroTheme', index);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('pomodoroTheme');
+    if (savedTheme !== null) {
+      selectTheme(parseInt(savedTheme));
+    }
+
+    // Toggle theme panel
+    settingsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      themePanel.classList.toggle('open');
+    });
+
+    // Close panel when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!themePanel.contains(e.target) && e.target !== settingsBtn) {
+        themePanel.classList.remove('open');
+      }
+    });
+
+    function updateDisplay() {
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      document.title = `${timerDisplay.textContent} - ${isBreak ? 'Break' : 'Focus'}`;
+    }
+
+    function toggleTimer() {
+      if (isRunning) {
+        // Pausing
+        clearInterval(interval);
+        startBtn.textContent = 'Start';
+      } else {
+        // Starting
+        if (!isBreak) {
+          currentTask = taskInput.value.trim();
+          taskInputWrapper.style.display = 'none';
+          currentTaskDisplay.innerHTML = `<strong>Working on:</strong> ${currentTask}`;
+          currentTaskDisplay.classList.add('visible');
+        }
+        
+        interval = setInterval(() => {
+          timeLeft--;
+          updateDisplay();
+          if (timeLeft <= 0) {
+            clearInterval(interval);
+            isRunning = false;
+            playSound();
+            switchMode();
+          }
+        }, 1000);
+        startBtn.textContent = 'Pause';
+      }
+      isRunning = !isRunning;
+      updateAdjustButtons();
+    }
+
+    function resetTimer() {
+      clearInterval(interval);
+      isRunning = false;
+      timeLeft = isBreak ? breakMinutes * 60 : workMinutes * 60;
+      startBtn.textContent = 'Start';
+      
+      if (!isBreak) {
+        // Reset during focus mode - show input again
+        taskInputWrapper.style.display = 'block';
+        currentTaskDisplay.classList.remove('visible');
+        startBtn.disabled = taskInput.value.trim() === '';
+      }
+      
+      updateDisplay();
+      updateAdjustButtons();
+    }
+
+    function switchMode() {
+      isBreak = !isBreak;
+      document.body.classList.toggle('break', isBreak);
+      modeDisplay.textContent = isBreak ? 'Break Time' : 'Focus Time';
+      skipBtn.textContent = isBreak ? '← Back to Focus' : 'Skip to Break →';
+      timeLeft = isBreak ? breakMinutes * 60 : workMinutes * 60;
+      startBtn.textContent = 'Start';
+      
+      if (isBreak) {
+        // Switching to break - hide task, enable start
+        currentTaskDisplay.classList.remove('visible');
+        taskInputWrapper.style.display = 'none';
+        startBtn.disabled = false;
+      } else {
+        // Switching to focus - show task input, clear previous task
+        taskInput.value = '';
+        currentTask = '';
+        taskInputWrapper.style.display = 'block';
+        currentTaskDisplay.classList.remove('visible');
+        startBtn.disabled = true;
+      }
+      
+      updateDisplay();
+      updateAdjustButtons();
+    }
+
+    function playSound() {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      gainNode.gain.value = 0.3;
+      
+      oscillator.start();
+      setTimeout(() => {
+        oscillator.stop();
+        audioContext.close();
+      }, 200);
+    }
+
+    startBtn.addEventListener('click', toggleTimer);
+    resetBtn.addEventListener('click', resetTimer);
+    skipBtn.addEventListener('click', () => {
+      clearInterval(interval);
+      isRunning = false;
+      switchMode();
+    });
+
+    updateDisplay();
+  </script>
+</body>
+</html>
