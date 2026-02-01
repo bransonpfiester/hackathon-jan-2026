@@ -471,101 +471,6 @@
       margin-top: 0.5rem;
     }
 
-    /* Corner image */
-    .corner-img {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      height: 200px;
-      width: auto;
-      border-radius: 8px;
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-      z-index: 50;
-      opacity: 0.95;
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
-
-    .corner-img:hover {
-      opacity: 1;
-      transform: scale(1.05);
-      border-color: rgba(255, 180, 200, 0.4);
-    }
-
-    /* Image Lightbox */
-    .lightbox {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.9);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      z-index: 200;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-      cursor: pointer;
-    }
-
-    .lightbox.active {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .lightbox-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1.5rem;
-      transform: scale(0.9);
-      transition: transform 0.3s ease;
-    }
-
-    .lightbox.active .lightbox-content {
-      transform: scale(1);
-    }
-
-    .lightbox-img {
-      max-width: 85vw;
-      max-height: 65vh;
-      border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-    }
-
-    .lightbox-player {
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-    }
-
-    .lightbox-close {
-      position: absolute;
-      top: 25px;
-      right: 25px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 0.7rem;
-      padding: 0.6rem 1.2rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-family: 'Space Mono', monospace;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      transition: all 0.2s ease;
-    }
-
-    .lightbox-close:hover {
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-    }
-
     /* Break mode */
     body.break-mode .mode { color: rgba(150, 200, 255, 0.9); }
     body.break-mode .timer { text-shadow: 0 0 40px rgba(150, 200, 255, 0.15); }
@@ -593,7 +498,6 @@
       .timer { font-size: 3.5rem; }
       .timer-card { padding: 2rem 1.5rem; }
       .title h1 { font-size: 1rem; letter-spacing: 6px; }
-      .corner-img { height: 120px; }
     }
   </style>
 </head>
@@ -601,9 +505,10 @@
   <!-- YouTube Video Background (always muted) -->
   <div class="video-background">
     <iframe 
-      src="https://www.youtube.com/embed/S-4hwfyK-XQ?autoplay=1&mute=1&loop=1&playlist=S-4hwfyK-XQ&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1"
+      id="ytplayer"
+      src="https://www.youtube-nocookie.com/embed/jfKfPfyJRdk?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&disablekb=1&fs=0&iv_load_policy=3"
       frameborder="0"
-      allow="autoplay; encrypted-media"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
       allowfullscreen>
     </iframe>
   </div>
@@ -639,17 +544,6 @@
       </div>
       
       <button class="btn btn-skip" id="skipBtn">Skip to Break →</button>
-    </div>
-  </div>
-
-  <!-- Corner image -->
-  <img src="profile.png" alt="" class="corner-img" id="cornerImg">
-
-  <!-- Image Lightbox -->
-  <div class="lightbox" id="lightbox">
-    <button class="lightbox-close" id="lightboxClose">× Close</button>
-    <div class="lightbox-content" onclick="event.stopPropagation()">
-      <img src="profile.png" alt="" class="lightbox-img">
     </div>
   </div>
 
@@ -982,40 +876,6 @@
     });
 
     updateDisplay();
-
-    // Lightbox with audio
-    const cornerImg = document.getElementById('cornerImg');
-    const lightbox = document.getElementById('lightbox');
-    const lightboxClose = document.getElementById('lightboxClose');
-
-    // Audio for the lightbox
-    const lightboxAudio = new Audio('King Von - Took Her To The O.mp3');
-    lightboxAudio.volume = 0.7;
-
-    function openLightbox() {
-      lightbox.classList.add('active');
-      lightboxAudio.currentTime = 0;
-      lightboxAudio.play();
-    }
-
-    function closeLightbox() {
-      lightbox.classList.remove('active');
-      lightboxAudio.pause();
-      lightboxAudio.currentTime = 0;
-    }
-
-    cornerImg.addEventListener('click', openLightbox);
-    lightbox.addEventListener('click', closeLightbox);
-    lightboxClose.addEventListener('click', (e) => {
-      e.stopPropagation();
-      closeLightbox();
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && lightbox.classList.contains('active')) {
-        closeLightbox();
-      }
-    });
   </script>
 </body>
 </html>
